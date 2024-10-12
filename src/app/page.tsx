@@ -167,10 +167,10 @@ const Home = () => {
               Create Seminar
             </h1>
             <p className="text-xs md:text-sm text-gray-500 ">
-              Easily create your seminar in just two steps! Set the class name
+              {`Easily create your seminar in just two steps! Set the class name
               and location, and you're done. A unique code is instantly
               generated for sharing, making attendance tracking seamless for
-              teachers and participation effortless for students.
+              teachers and participation effortless for students.`}
             </p>
             <div className="bg-[#5fda45] p-2 rounded-xl flex hover:bg-blue-600 transition duration-300 w-max text-white font-bold">
               <Link href="/">
@@ -193,10 +193,10 @@ const Home = () => {
               Join Seminar
             </h1>
             <p className="text-xs md:text-sm text-gray-500 ">
-              Joining a seminar is as simple as it gets! Just enter the passcode
+              {`Joining a seminar is as simple as it gets! Just enter the passcode
               shared by your teacher, and mark your attendance instantly. With
               location-based verification, you can easily check in with minimal
-              effort—quick, secure, and hassle-free!
+              effort—quick, secure, and hassle-free!`}
             </p>
             <div className="bg-[#5fda45] p-2 rounded-xl flex hover:bg-blue-600 transition duration-300 w-max text-white font-bold">
               <Link href="/">

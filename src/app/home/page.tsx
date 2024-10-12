@@ -58,9 +58,9 @@ const Main = () => {
                     Simplify Your Seminar Management
                   </h2>
                   <p className="mb-4">
-                    Effortlessly create and manage your seminars. With just a
+                    {`Effortlessly create and manage your seminars. With just a
                     few clicks, set up new seminars, track attendance, and view
-                    detailed reports of past sessions.
+                    detailed reports of past sessions.`}
                   </p>
                   <div className="flex items-center gap-5">
                     <button
@@ -85,10 +85,10 @@ const Main = () => {
                     Join and Track Your Learning
                   </h2>
                   <p className="mb-4 font-serif text-[#345068]">
-                    Easily join seminars with location-based attendance,
+                    {`Easily join seminars with location-based attendance,
                     ensuring you're counted when it matters. Stay on top of your
                     academic journey by viewing all your past seminars in one
-                    place.
+                    place.`}
                   </p>
                   <div className="flex items-center gap-5">
                     <button

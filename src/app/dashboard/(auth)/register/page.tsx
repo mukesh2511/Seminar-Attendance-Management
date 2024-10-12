@@ -22,7 +22,7 @@ const Register = () => {
     rollNo: 0,
     isVerified: "true",
   });
-  console.log(user.role);
+
   useEffect(() => {
     if (user.role === "STUDENT") {
       setIsStudent(true);
@@ -31,26 +31,43 @@ const Register = () => {
     }
   }, [user.role]);
 
+  // Validate user based on the role and other fields
   const validateUser = () => {
-    const { name, email, password, role, division, className, rollNo } = user;
-    // Check if any of the fields are empty or invalid
-    return (
-      name.trim() !== "" &&
-      email.trim() !== "" &&
-      password.trim() !== "" &&
-      role.trim() !== "" &&
-      division.trim() !== "" &&
-      className.trim() !== "" &&
-      rollNo > 0 // Roll number must be greater than 0
-    );
+    const { name, email, password, role } = user;
+
+    // Common validation for all users
+    if (
+      name.trim() === "" ||
+      email.trim() === "" ||
+      password.trim() === "" ||
+      role.trim() === ""
+    ) {
+      return false;
+    }
+
+    // Additional validation for students
+    if (isStudent) {
+      const { className, division, rollNo } = user;
+      if (
+        className.trim() === "" ||
+        division.trim() === "" ||
+        rollNo <= 0 // Roll number must be greater than 0
+      ) {
+        return false;
+      }
+    }
+
+    return true;
   };
+
+  // Update button disable state based on form validation
   useEffect(() => {
     if (validateUser()) {
-      setDisable(false);
+      setDisable(false); // Enable button if valid
     } else {
-      setDisable(true);
+      setDisable(true); // Disable button if invalid
     }
-  }, [user]);
+  }, [user, isStudent]);
 
   const onSignUp = async (e: FormEvent) => {
     e.preventDefault();
@@ -122,42 +139,41 @@ const Register = () => {
                 <option value="STUDENT">STUDENT</option>
                 <option value="TEACHER">TEACHER</option>
               </select>
+
               {isStudent && (
-                <input
-                  type="text"
-                  placeholder="Class"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
-                  value={user.className}
-                  onChange={(e) =>
-                    setUser({ ...user, className: e.target.value })
-                  }
-                />
-              )}
-              {isStudent && (
-                <input
-                  type="text"
-                  placeholder="Division"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
-                  value={user.division}
-                  onChange={(e) =>
-                    setUser({ ...user, division: e.target.value })
-                  }
-                />
-              )}
-              {isStudent && (
-                <input
-                  type={user.rollNo === 0 ? "string" : "number"}
-                  placeholder={
-                    user.rollNo === 0
-                      ? "Roll No (must be greater than 0)"
-                      : "Roll No"
-                  }
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
-                  value={user.rollNo}
-                  onChange={(e) =>
-                    setUser({ ...user, rollNo: +e.target.value })
-                  }
-                />
+                <>
+                  <input
+                    type="text"
+                    placeholder="Class"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
+                    value={user.className}
+                    onChange={(e) =>
+                      setUser({ ...user, className: e.target.value })
+                    }
+                  />
+                  <input
+                    type="text"
+                    placeholder="Division"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
+                    value={user.division}
+                    onChange={(e) =>
+                      setUser({ ...user, division: e.target.value })
+                    }
+                  />
+                  <input
+                    type="number"
+                    placeholder={
+                      user.rollNo === 0
+                        ? "Roll No (must be greater than 0)"
+                        : "Roll No"
+                    }
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
+                    value={user.rollNo}
+                    onChange={(e) =>
+                      setUser({ ...user, rollNo: +e.target.value })
+                    }
+                  />
+                </>
               )}
 
               <button
@@ -168,10 +184,8 @@ const Register = () => {
                     : loading
                     ? "bg-gray-400 cursor-not-allowed"
                     : "bg-[#5fda45] hover:bg-blue-600"
-                } 
-
-                `}
-                disabled={loading}
+                }`}
+                disabled={disable || loading}
               >
                 {loading ? (
                   <img
@@ -185,7 +199,7 @@ const Register = () => {
               </button>
             </form>
             <p className="text-gray-500 mb-6 text-center mt-2">
-              already have an Account?{" "}
+              {`already have an Account?`}{" "}
               <Link href={"/dashboard/login"}>
                 <b className="hover:text-[#5fda45]">Click here</b>
               </Link>
@@ -194,16 +208,16 @@ const Register = () => {
 
           {/* Right Section - Image and Text */}
           <div
-            className="w-full md:w-1/2 bg-cover bg-center relative p-2  hidden md:flex"
+            className="w-full md:w-1/2 bg-cover bg-center relative p-2 hidden md:flex"
             style={{
               backgroundImage:
-                "url(https://wpschoolpress.com/wp-content/uploads/2023/05/Attendance-Management-System.png) ",
+                "url(https://wpschoolpress.com/wp-content/uploads/2023/05/Attendance-Management-System.png)",
               backgroundSize: "cover",
             }}
           >
-            <div className="absolute inset-0 top-7 bg-opacity-10 ">
+            <div className="absolute inset-0 top-7 bg-opacity-10">
               <h3 className="text-[#374151] text-xl md:text-2xl font-semibold text-center">
-                Attendance Made Simple, Anywhere You Are!
+                {`Attendance Made Simple, Anywhere You Are!`}
               </h3>
             </div>
           </div>

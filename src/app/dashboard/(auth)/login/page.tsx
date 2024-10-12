@@ -90,7 +90,7 @@ const Login = () => {
           {/* Left Section - Form */}
           <div className="w-full md:w-1/2 p-8">
             <h2 className="text-2xl font-bold text-gray-700">Login</h2>
-            <p className="text-gray-500 mb-6">One step behind. SignIn</p>
+            <p className="text-gray-500 mb-6">{`One step behind. SignIn`}</p>
 
             <form className="space-y-4" onSubmit={handleSignIn}>
               <input
@@ -135,7 +135,7 @@ const Login = () => {
               </button>
             </form>
             <p className="text-gray-500 mb-6 text-center mt-2 ">
-              Don't have an account?{" "}
+              {`Don't have an account?`}
               <b
                 className="hover:text-[#5fda45] cursor-pointer"
                 onClick={handleClick}
@@ -156,7 +156,7 @@ const Login = () => {
           >
             <div className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center">
               <h3 className="text-white text-2xl md:text-lg font-semibold text-center px-4">
-                Attendance Made Simple, Anywhere You Are!
+                {`Attendance Made Simple, Anywhere You Are!`}
               </h3>
             </div>
           </div>

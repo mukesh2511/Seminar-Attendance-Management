@@ -4,7 +4,7 @@ import toast, { Toaster } from "react-hot-toast";
 import axios from "axios";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { signUpSchema } from "@/schemas/signUpSchema";
+import { signUpSchema, signUpSchemaTeachers } from "@/schemas/signUpSchema";
 
 const Register = () => {
   const Router = useRouter();
@@ -20,67 +20,69 @@ const Register = () => {
     division: "",
     className: "",
     rollNo: 0,
-    isVerified: "true",
+    isVerified: true,
   });
 
-  useEffect(() => {
-    if (user.role === "STUDENT") {
-      setIsStudent(true);
-    } else {
-      setIsStudent(false);
-    }
-  }, [user.role]);
-
-  // Validate user based on the role and other fields
+  console.log(user.role);
   const validateUser = () => {
-    const { name, email, password, role } = user;
-
-    // Common validation for all users
-    if (
-      name.trim() === "" ||
-      email.trim() === "" ||
-      password.trim() === "" ||
-      role.trim() === ""
-    ) {
-      return false;
+    if (user.role === "STUDENT") {
+      const { name, email, password, role, division, className, rollNo } = user;
+      // Check if any of the fields are empty or invalid
+      return (
+        name.trim() !== "" &&
+        email.trim() !== "" &&
+        password.trim() !== "" &&
+        role.trim() !== "" &&
+        division.trim() !== "" &&
+        className.trim() !== "" &&
+        rollNo > 0 // Roll number must be greater than 0
+      );
     }
-
-    // Additional validation for students
-    if (isStudent) {
-      const { className, division, rollNo } = user;
-      if (
-        className.trim() === "" ||
-        division.trim() === "" ||
-        rollNo <= 0 // Roll number must be greater than 0
-      ) {
-        return false;
-      }
+    if (user.role === "TEACHER") {
+      const { name, email, password, role } = user;
+      // Check if any of the fields are empty or invalid
+      return (
+        name.trim() !== "" &&
+        email.trim() !== "" &&
+        password.trim() !== "" &&
+        role.trim() !== ""
+      );
     }
-
-    return true;
+    return false;
   };
-
-  // Update button disable state based on form validation
   useEffect(() => {
     if (validateUser()) {
-      setDisable(false); // Enable button if valid
+      setDisable(false);
     } else {
-      setDisable(true); // Disable button if invalid
+      setDisable(true);
     }
-  }, [user, isStudent]);
+  }, [user]);
 
   const onSignUp = async (e: FormEvent) => {
     e.preventDefault();
 
     try {
       setLoading(true);
-
-      const result = signUpSchema.safeParse(user);
-      if (!result.success) {
-        toast.error(result.error.issues[0].message);
-        setLoading(false);
-        return;
+      console.log(user);
+      if (user.role === "STUDENT") {
+        const result = signUpSchema.safeParse(user);
+        console.log(result.success);
+        if (!result.success) {
+          toast.error(result.error.issues[0].message);
+          setLoading(false);
+          return;
+        }
       }
+      if (user.role === "TEACHER") {
+        const result = signUpSchemaTeachers.safeParse(user);
+        console.log(result.success);
+        if (!result.success) {
+          toast.error(result.error.issues[0].message);
+          setLoading(false);
+          return;
+        }
+      }
+      console.log("HEEEHEHEHHS");
 
       // Using toast.promise to handle the API call and toast notifications
       await toast.promise(axios.post("/api/auth/register", user), {
@@ -97,6 +99,13 @@ const Register = () => {
       toast.error(error.response.data.message);
     }
   };
+  useEffect(() => {
+    if (user.role === "STUDENT") {
+      setIsStudent(true);
+    } else {
+      setIsStudent(false);
+    }
+  }, [user.role]);
 
   return (
     <>
@@ -139,67 +148,79 @@ const Register = () => {
                 <option value="STUDENT">STUDENT</option>
                 <option value="TEACHER">TEACHER</option>
               </select>
-
               {isStudent && (
-                <>
-                  <input
-                    type="text"
-                    placeholder="Class"
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
-                    value={user.className}
-                    onChange={(e) =>
-                      setUser({ ...user, className: e.target.value })
-                    }
-                  />
-                  <input
-                    type="text"
-                    placeholder="Division"
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
-                    value={user.division}
-                    onChange={(e) =>
-                      setUser({ ...user, division: e.target.value })
-                    }
-                  />
-                  <input
-                    type="number"
-                    placeholder={
-                      user.rollNo === 0
-                        ? "Roll No (must be greater than 0)"
-                        : "Roll No"
-                    }
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
-                    value={user.rollNo}
-                    onChange={(e) =>
-                      setUser({ ...user, rollNo: +e.target.value })
-                    }
-                  />
-                </>
+                <input
+                  type="text"
+                  placeholder="Class"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
+                  value={user.className}
+                  onChange={(e) =>
+                    setUser({ ...user, className: e.target.value })
+                  }
+                />
+              )}
+              {isStudent && (
+                <input
+                  type="text"
+                  placeholder="Division"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
+                  value={user.division}
+                  onChange={(e) =>
+                    setUser({ ...user, division: e.target.value })
+                  }
+                />
+              )}
+              {isStudent && user.rollNo == 0 && (
+                <input
+                  type="number"
+                  placeholder="Roll No"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
+                  value={user.rollNo}
+                  onChange={(e) =>
+                    setUser({ ...user, rollNo: +e.target.value })
+                  }
+                />
+              )}
+              {isStudent && user.rollNo > 0 && (
+                <input
+                  type="number"
+                  autoFocus
+                  placeholder="Roll No"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
+                  value={user.rollNo}
+                  onChange={(e) =>
+                    setUser({ ...user, rollNo: +e.target.value })
+                  }
+                />
               )}
 
               <button
+                disabled={disable}
                 type="submit"
-                className={`w-full py-2 rounded-lg text-white transition duration-300 ${
-                  disable
-                    ? "bg-gray-400 cursor-not-allowed "
-                    : loading
+                className={`w-full text-white py-2 rounded-lg transition duration-300 ${
+                  disable ? "bg-[#5fda45]" : "bg-[#5fda45] hover:bg-blue-600"
+                }
+                ${
+                  loading
                     ? "bg-gray-400 cursor-not-allowed"
                     : "bg-[#5fda45] hover:bg-blue-600"
                 }`}
-                disabled={disable || loading}
               >
                 {loading ? (
                   <img
                     src="/spinner.gif"
-                    alt="Loading..."
-                    className="w-6 h-6 mx-auto"
+                    alt="loading.."
+                    className="w-6 h-6 mx-auto bg-[#5fda45]"
                   />
+                ) : disable ? (
+                  "No SignUp"
                 ) : (
-                  "Register"
+                  "Sign Up"
                 )}
               </button>
             </form>
             <p className="text-gray-500 mb-6 text-center mt-2">
-              {`already have an Account?`}{" "}
+              already have an Account?{" "}
               <Link href={"/dashboard/login"}>
                 <b className="hover:text-[#5fda45]">Click here</b>
               </Link>
@@ -208,14 +229,14 @@ const Register = () => {
 
           {/* Right Section - Image and Text */}
           <div
-            className="w-full md:w-1/2 bg-cover bg-center relative p-2 hidden md:flex"
+            className="w-full md:w-1/2 bg-cover bg-center relative p-2  hidden md:flex"
             style={{
               backgroundImage:
-                "url(https://wpschoolpress.com/wp-content/uploads/2023/05/Attendance-Management-System.png)",
+                "url(https://wpschoolpress.com/wp-content/uploads/2023/05/Attendance-Management-System.png) ",
               backgroundSize: "cover",
             }}
           >
-            <div className="absolute inset-0 top-7 bg-opacity-10">
+            <div className="absolute inset-0 top-7 bg-opacity-10 ">
               <h3 className="text-[#374151] text-xl md:text-2xl font-semibold text-center">
                 {`Attendance Made Simple, Anywhere You Are!`}
               </h3>

@@ -4,7 +4,7 @@ import { Connect } from "@/utils/db";
 import userModel from "@/models/userModel";
 import studentModel from "@/models/studentModel";
 import teacherModel from "@/models/teacherModel";
-import { signUpSchema } from "@/schemas/signUpSchema";
+import { signUpSchema, signUpSchemaTeachers } from "@/schemas/signUpSchema";
 
 // Define the request body type
 interface RequestBody {
@@ -22,11 +22,16 @@ interface RequestBody {
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    const result = signUpSchema.safeParse(body);
-    if (!result.success) {
+    let result;
+    if (body.role === "STUDENT") {
+      result = signUpSchema.safeParse(body);
+    } else if (body.role === "TEACHER") {
+      result = signUpSchemaTeachers.safeParse(body);
+    }
+    if (!result?.success) {
       return NextResponse.json(
         {
-          error: result.error.errors, // Detailed error messages
+          error: result?.error.errors, // Detailed error messages
         },
         { status: 400 }
       );

@@ -2,7 +2,7 @@
 import CreateSeminar from "@/components/CreateSeminar";
 import JoinSeminar from "@/components/JoinSeminar";
 import Link from "next/link";
-import React, { useContext, useEffect, useRef } from "react";
+import React, { useContext, useEffect, useRef, useState } from "react";
 import { ReactTyped } from "react-typed";
 import ArrowCircleDownIcon from "@mui/icons-material/ArrowCircleDown";
 import CallMadeIcon from "@mui/icons-material/CallMade";
@@ -15,6 +15,7 @@ const Home = () => {
   // console.log({ user });
   const secondRef = useRef<HTMLDivElement>(null);
   const { user, dispatch } = useContext(AuthContext);
+  const [isMounted, setIsmounted] = useState(false);
 
   /////check token expired
   const isTokenExpired = async (token: string) => {
@@ -55,6 +56,9 @@ const Home = () => {
       }
     }
   };
+  useEffect(() => {
+    setIsmounted(true);
+  }, []);
 
   useEffect(() => {
     const checkToken = async () => {
@@ -89,31 +93,38 @@ const Home = () => {
           <div className="absolute inset-0 bg-[#cfdcff] opacity-30 rounded-lg"></div>
 
           {/* Content */}
-          <div className="relative z-10 flex-1 flex flex-col justify-center my-5 md:my-0 pl-10">
+          <div className="relative z-10 flex-1 flex flex-col justify-center my-5 md:my-0 md:pl-10 ">
             <h1 className="text-3xl md:text-4xl font-bold mb-4">Welcome to</h1>
-            <ReactTyped
-              strings={["Seminar Attendance Management"]}
-              typeSpeed={50}
-              backSpeed={40}
-              showCursor={false}
-              className="text-2xl md:text-3xl text-Black font-semibold mb-4"
-            />
-            <ReactTyped
-              strings={[
-                "Efficient Tracking for Teachers",
-                "Easy Participation for Students",
-              ]}
-              typeSpeed={50}
-              backSpeed={40}
-              startDelay={2000}
-              fadeOut={true}
-              loop
-              className="text-2xl md:text-3xl text-blue-600 font-semibold"
-            />
-            <ArrowCircleDownIcon
-              className="text-6xl hidden md:flex justify-center mt-20 animate-bounce text-blue-600 cursor-pointer"
-              onClick={scrollToSection}
-            />
+            {isMounted && (
+              <>
+                <ReactTyped
+                  strings={["Seminar Attendance Management"]}
+                  typeSpeed={50}
+                  backSpeed={40}
+                  showCursor={false}
+                  className="text-2xl md:text-3xl text-Black font-semibold mb-4"
+                />
+                <ReactTyped
+                  strings={[
+                    "Efficient Tracking for Teachers",
+                    "Easy Participation for Students",
+                  ]}
+                  typeSpeed={50}
+                  backSpeed={40}
+                  startDelay={2000}
+                  fadeOut={true}
+                  loop
+                  className="text-xl md:text-3xl text-blue-600 font-semibold"
+                />
+              </>
+            )}
+            {isMounted && (
+              <ArrowCircleDownIcon
+                // style={{ fontSize: '6rem' }} // Ensure consistent size
+                className="text-6xl hidden md:flex justify-center mt-20 animate-bounce text-blue-600 cursor-pointer"
+                onClick={scrollToSection}
+              />
+            )}
           </div>
 
           {/* Image with clip-path */}

@@ -1,113 +1,229 @@
-import Image from "next/image";
+"use client";
+import CreateSeminar from "@/components/CreateSeminar";
+import JoinSeminar from "@/components/JoinSeminar";
+import Link from "next/link";
+import React, { useContext, useEffect, useRef } from "react";
+import { ReactTyped } from "react-typed";
+import ArrowCircleDownIcon from "@mui/icons-material/ArrowCircleDown";
+import CallMadeIcon from "@mui/icons-material/CallMade";
+import { AuthContext } from "@/context/userContext";
+import { jwtVerify, decodeProtectedHeader } from "jose";
+import toast, { Toaster } from "react-hot-toast";
 
-export default function Home() {
+const Home = () => {
+  //
+  // console.log({ user });
+  const secondRef = useRef<HTMLDivElement>(null);
+  const { user, dispatch } = useContext(AuthContext);
+
+  /////check token expired
+  const isTokenExpired = async (token: string) => {
+    try {
+      console.log("Token expiration inside", token);
+      if (!token) {
+        return toast.error("Login to continue!!");
+      }
+
+      const secretKeyString = "mijsuh87we3hrjn";
+      if (!secretKeyString) {
+        console.error("JWTSECRET is not defined");
+        return false;
+      }
+      const secretKey = new TextEncoder().encode(secretKeyString);
+
+      // Verify the token
+      const { payload } = await jwtVerify(token, secretKey);
+      console.log({ payload }, "Decoded Token");
+
+      // Manual expiration check
+      const currentTime = Math.floor(Date.now() / 1000);
+      if (!payload.exp) {
+        console.log("No expiration time");
+        return false;
+      }
+      console.log({ expirTime: payload.exp });
+
+      // Return true if expired, otherwise false
+      return payload.exp < currentTime;
+    } catch (error: any) {
+      if (error.code === "ERR_JWT_EXPIRED") {
+        console.error("Token has expired:", error);
+        return true; // Token is expired
+      } else {
+        console.error("Error verifying token:", error);
+        return false; // Other errors
+      }
+    }
+  };
+
+  useEffect(() => {
+    const checkToken = async () => {
+      if (user) {
+        const token = user.token;
+
+        // Check if the token is expired
+        const expired = await isTokenExpired(token);
+        if (expired) {
+          toast.error("Login to continue!!");
+          console.log("Token expired");
+          dispatch({ type: "LOGOUT" });
+          localStorage.removeItem("user");
+        }
+      }
+    };
+
+    checkToken();
+  }, [user]); // Make sure to add user as a dependency
+
+  const scrollToSection = () => {
+    secondRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
   return (
-    <main className="flex min-h-screen flex-col items-center justify-between p-24">
-      <div className="z-10 w-full max-w-5xl items-center justify-between font-mono text-sm lg:flex">
-        <p className="fixed left-0 top-0 flex w-full justify-center border-b border-gray-300 bg-gradient-to-b from-zinc-200 pb-6 pt-8 backdrop-blur-2xl dark:border-neutral-800 dark:bg-zinc-800/30 dark:from-inherit lg:static lg:w-auto  lg:rounded-xl lg:border lg:bg-gray-200 lg:p-4 lg:dark:bg-zinc-800/30">
-          Get started by editing&nbsp;
-          <code className="font-mono font-bold">src/app/page.tsx</code>
-        </p>
-        <div className="fixed bottom-0 left-0 flex h-48 w-full items-end justify-center bg-gradient-to-t from-white via-white dark:from-black dark:via-black lg:static lg:size-auto lg:bg-none">
-          <a
-            className="pointer-events-none flex place-items-center gap-2 p-8 lg:pointer-events-auto lg:p-0"
-            href="https://vercel.com?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            By{" "}
-            <Image
-              src="/vercel.svg"
-              alt="Vercel Logo"
-              className="dark:invert"
-              width={100}
-              height={24}
-              priority
+    <>
+      <Toaster />
+      <div className="w-full flex flex-col items-center min-h-screen gap-10 overflow-y-auto">
+        {/* First Section - Full Screen Hero */}
+        <div className="relative w-full h-[80vh] shadow-xl flex flex-col md:flex-row justify-between items-center rounded-lg overflow-hidden md:pl-2 my-10">
+          {/* Background with opacity */}
+          <div className="absolute inset-0 bg-[#cfdcff] opacity-30 rounded-lg"></div>
+
+          {/* Content */}
+          <div className="relative z-10 flex-1 flex flex-col justify-center my-5 md:my-0 pl-10">
+            <h1 className="text-3xl md:text-4xl font-bold mb-4">Welcome to</h1>
+            <ReactTyped
+              strings={["Seminar Attendance Management"]}
+              typeSpeed={50}
+              backSpeed={40}
+              showCursor={false}
+              className="text-2xl md:text-3xl text-Black font-semibold mb-4"
             />
-          </a>
+            <ReactTyped
+              strings={[
+                "Efficient Tracking for Teachers",
+                "Easy Participation for Students",
+              ]}
+              typeSpeed={50}
+              backSpeed={40}
+              startDelay={2000}
+              fadeOut={true}
+              loop
+              className="text-2xl md:text-3xl text-blue-600 font-semibold"
+            />
+            <ArrowCircleDownIcon
+              className="text-6xl hidden md:flex justify-center mt-20 animate-bounce text-blue-600 cursor-pointer"
+              onClick={scrollToSection}
+            />
+          </div>
+
+          {/* Image with clip-path */}
+          <div className="z-10 flex-1 w-full h-full">
+            <img
+              src="/hero.png"
+              alt="heroImg"
+              className="w-full h-full object-cover hidden md:inline-block"
+              style={{
+                clipPath:
+                  "polygon(25% 0%, 100% 0%, 100% 100%, 25% 100%, 0% 50%)",
+              }}
+            />
+            <img
+              src="/hero.png"
+              alt="heroImg"
+              className="w-full h-full object-cover md:hidden"
+            />
+          </div>
+        </div>
+        {/* ////////title  */}
+        <h1 className="text-4xl font-bold" ref={secondRef}>
+          Attendance Made Simple
+        </h1>
+
+        {/* Second Section - Smaller Card */}
+        <div className="relative w-full h-[50vh] shadow-xl flex flex-row justify-between items-center rounded-lg overflow-hidden md:pl-2 mb-10">
+          {/* Background with opacity */}
+          <div className="absolute inset-0 bg-[#cfdcff] opacity-30 rounded-lg"></div>
+
+          {/* Image */}
+          <div className="z-10 flex-1 w-full h-full">
+            <img
+              src="/hero2.png"
+              alt="heroImg"
+              className="w-full h-full object-cover hidden md:inline-block"
+              style={{
+                clipPath: "polygon(0% 0%, 75% 0%, 100% 50%, 75% 100%, 0% 100%)",
+              }}
+            />
+            <img
+              src="/hero2.png"
+              alt="heroImg"
+              className="w-full h-full object-cover md:hidden"
+            />
+          </div>
+
+          {/* Content */}
+          <div className="relative z-10 flex-1 flex flex-col justify-center md:my-0 px-2 md:px-10 gap-3">
+            <h1 className="text-xl md:text-3xl  font-bold mb-1 md:mb-4">
+              Create Seminar
+            </h1>
+            <p className="text-xs md:text-sm text-gray-500 ">
+              Easily create your seminar in just two steps! Set the class name
+              and location, and you're done. A unique code is instantly
+              generated for sharing, making attendance tracking seamless for
+              teachers and participation effortless for students.
+            </p>
+            <div className="bg-[#5fda45] p-2 rounded-xl flex hover:bg-blue-600 transition duration-300 w-max text-white font-bold">
+              <Link href="/">
+                Try Now <CallMadeIcon />
+              </Link>
+            </div>
+          </div>
+        </div>
+
+        {/* Third Section - Smaller Card */}
+        <div className="relative w-full h-[50vh] shadow-xl flex flex-row justify-between items-center rounded-lg overflow-hidden md:pl-2 mb-10">
+          {/* Background with opacity */}
+          <div className="absolute inset-0 bg-[#cfdcff] opacity-30 rounded-lg"></div>
+
+          {/* Image */}
+
+          {/* Content */}
+          <div className="relative z-10 flex-1 flex flex-col justify-center md:my-0 px-2 md:px-10 gap-3">
+            <h1 className="text-xl md:text-3xl  font-bold mb-1 md:mb-4">
+              Join Seminar
+            </h1>
+            <p className="text-xs md:text-sm text-gray-500 ">
+              Joining a seminar is as simple as it gets! Just enter the passcode
+              shared by your teacher, and mark your attendance instantly. With
+              location-based verification, you can easily check in with minimal
+              effort—quick, secure, and hassle-free!
+            </p>
+            <div className="bg-[#5fda45] p-2 rounded-xl flex hover:bg-blue-600 transition duration-300 w-max text-white font-bold">
+              <Link href="/">
+                Try Now <CallMadeIcon />
+              </Link>
+            </div>
+          </div>
+          <div className="z-10 flex-1 w-full h-full">
+            <img
+              src="/hero3.png"
+              alt="heroImg"
+              className="w-full h-full object-cover hidden md:inline-block"
+              style={{
+                clipPath:
+                  "polygon(25% 0%, 100% 0%, 100% 100%, 25% 100%, 0% 50%)",
+              }}
+            />
+            <img
+              src="/hero3.png"
+              alt="heroImg"
+              className="w-full h-full object-cover md:hidden rounded-l-sm"
+            />
+          </div>
         </div>
       </div>
-
-      <div className="relative z-[-1] flex place-items-center before:absolute before:h-[300px] before:w-full before:-translate-x-1/2 before:rounded-full before:bg-gradient-radial before:from-white before:to-transparent before:blur-2xl before:content-[''] after:absolute after:-z-20 after:h-[180px] after:w-full after:translate-x-1/3 after:bg-gradient-conic after:from-sky-200 after:via-blue-200 after:blur-2xl after:content-[''] before:dark:bg-gradient-to-br before:dark:from-transparent before:dark:to-blue-700 before:dark:opacity-10 after:dark:from-sky-900 after:dark:via-[#0141ff] after:dark:opacity-40 sm:before:w-[480px] sm:after:w-[240px] before:lg:h-[360px]">
-        <Image
-          className="relative dark:drop-shadow-[0_0_0.3rem_#ffffff70] dark:invert"
-          src="/next.svg"
-          alt="Next.js Logo"
-          width={180}
-          height={37}
-          priority
-        />
-      </div>
-
-      <div className="mb-32 grid text-center lg:mb-0 lg:w-full lg:max-w-5xl lg:grid-cols-4 lg:text-left">
-        <a
-          href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className="mb-3 text-2xl font-semibold">
-            Docs{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className="m-0 max-w-[30ch] text-sm opacity-50">
-            Find in-depth information about Next.js features and API.
-          </p>
-        </a>
-
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className="mb-3 text-2xl font-semibold">
-            Learn{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className="m-0 max-w-[30ch] text-sm opacity-50">
-            Learn about Next.js in an interactive course with&nbsp;quizzes!
-          </p>
-        </a>
-
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className="mb-3 text-2xl font-semibold">
-            Templates{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className="m-0 max-w-[30ch] text-sm opacity-50">
-            Explore starter templates for Next.js.
-          </p>
-        </a>
-
-        <a
-          href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className="mb-3 text-2xl font-semibold">
-            Deploy{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className="m-0 max-w-[30ch] text-balance text-sm opacity-50">
-            Instantly deploy your Next.js site to a shareable URL with Vercel.
-          </p>
-        </a>
-      </div>
-    </main>
+    </>
   );
-}
+};
+
+export default Home;

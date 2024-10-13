@@ -1,5 +1,6 @@
 import ClassModel from "@/models/classModel";
 import studentModel from "@/models/studentModel";
+import areLocationsNear from "@/utils/calculateDistance";
 import calculateDistanceInMeters from "@/utils/calculateDistance";
 import mongoose from "mongoose";
 import { NextResponse, NextRequest } from "next/server";
@@ -13,7 +14,7 @@ export async function POST(req: NextRequest) {
   try {
     console.log(req);
     const body: any = await req.json(); // Ensure you await the JSON parsing
-    const { latitude, longitude, code, ip } = body;
+    const { latitude, longitude, accuracy, code, ip } = body;
     const userId = req.headers.get("x-user-id");
     const userRole = req.headers.get("x-user-role"); // Unused, consider removing if not needed
 
@@ -39,18 +40,36 @@ export async function POST(req: NextRequest) {
     }
 
     // Calculate distance
-    const distance = await calculateDistanceInMeters(
+    console.log({
+      ClassLatitude: getClass.latitude,
+      ClassLongitude: getClass.longitude,
+      ClassAaccuracy: getClass.accuracy,
+      userLatitude: latitude,
+      userLongitude: longitude,
+      userAccuracy: accuracy,
+    });
+    // const distance = await calculateDistanceInMeters(
+    //   getClass.latitude,
+    //   getClass.longitude,
+    //   latitude,
+    //   longitude
+    // );
+    // console.log({ distance });
+    const isValidLocation = await areLocationsNear(
       getClass.latitude,
       getClass.longitude,
+      getClass.accuracy,
       latitude,
-      longitude
+      longitude,
+      accuracy
     );
-    console.log({ distance });
-
-    // Distance check
-    if (distance > 10) {
+    if (!isValidLocation) {
       return createErrorResponse("You are not inside class", 401);
     }
+    // Distance check
+    // if (distance > 10) {
+    //   return createErrorResponse("You are not inside class", 401);
+    // }
 
     // Check if student already joined the class
     if (getClass.ipAddressStudent.includes(ip)) {

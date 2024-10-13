@@ -8,7 +8,8 @@ import { NextRequest, NextResponse } from "next/server";
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { className, code, latitude, longitude, ipAddTeacher } = body;
+    const { className, code, latitude, longitude, ipAddTeacher, accuracy } =
+      body;
 
     const userId = req.headers.get("x-user-id");
     const userRole = req.headers.get("x-user-role"); // Unused, remove if unnecessary
@@ -30,6 +31,7 @@ export async function POST(req: NextRequest) {
       classCode: code,
       latitude: latitude,
       longitude: longitude,
+      accuracy: accuracy,
       // attendedStudents: [
       //   {
       //     id: teacherId, // Ensure the ID is a valid ObjectId

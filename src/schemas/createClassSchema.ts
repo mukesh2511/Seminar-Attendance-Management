@@ -15,12 +15,13 @@ export const createClassSchema = z.object({
   classCode: z
     .string()
     .length(8, { message: "Class code must be exactly 8 characters" }), // Fixed 8 characters for the class code
-  latitude: z
-    .number()
-    .min(-90, { message: "Latitude must be between -90 and 90" })
-    .max(90, { message: "Latitude must be between -90 and 90" }),
-  longitude: z
-    .number()
-    .min(-180, { message: "Longitude must be between -180 and 180" })
-    .max(180, { message: "Longitude must be between -180 and 180" }),
+  latitude: z.number(),
+  // .min(-90, { message: "Latitude must be between -90 and 90" })
+  // .max(90, { message: "Latitude must be between -90 and 90" }),
+  longitude: z.number(),
+  // .min(-180, { message: "Longitude must be between -180 and 180" })
+  // .max(180, { message: "Longitude must be between -180 and 180" }),
+  accuracy: z.number(),
+  // .min(-180, { message: "Longitude must be between -180 and 180" })
+  // .max(180, { message: "Longitude must be between -180 and 180" }),
 });

@@ -8,6 +8,7 @@ export interface Class extends Document {
   classCode: string;
   latitude: number;
   longitude: number;
+  accuracy: number;
   ipAddressStudent: string[]; // Array of IP addresses for students
   attendedStudents: [
     {
@@ -46,6 +47,10 @@ const ClassSchema: Schema<Class> = new Schema(
       required: true,
     },
     longitude: {
+      type: Number,
+      required: true,
+    },
+    accuracy: {
       type: Number,
       required: true,
     },

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import React, { FormEvent, useEffect, useState } from "react";
 import toast, { Toaster } from "react-hot-toast";
+import useGeolocation, { GeolocationResult } from "./useGeolocation";
 
 interface CustomGeolocationOptions {
   enableHighAccuracy?: boolean;
@@ -19,33 +20,70 @@ const JoinSeminar = () => {
   const [code, setCode] = useState<string>("");
   const [latitude, setLatitude] = useState<number>(0);
   const [longitude, setLongitude] = useState<number>(0);
+  const [accuracy, setAccuracy] = useState<number>(0);
   const [isLocationchecked, SetIsLocationCheck] = useState(false);
 
-  const getLocationandIp = async () => {
-    try {
-      const position: GeolocationPosition = await new Promise(
-        (resolve, reject) => {
-          const options: CustomGeolocationOptions = {
-            enableHighAccuracy: true,
-            timeout: 5000,
-            maximumAge: 0,
-          };
+  //////geoLocation
+  const { location, error } = useGeolocation();
+  const [locationChecks, setLocationChecks] = useState<GeolocationResult[]>([]);
+  console.log({ locationChecks });
 
-          navigator.geolocation.getCurrentPosition(resolve, reject, options);
-        }
-      );
-
-      setLatitude(position.coords.latitude);
-      setLongitude(position.coords.longitude);
-
-      const response = await fetch("https://api.ipify.org?format=json");
-      const data = await response.json();
-      setIp(data.ip);
-    } catch (error) {
-      toast.error("Failed to record location");
-      console.log("Error retrieving location or IP:", error);
+  useEffect(() => {
+    if (location && locationChecks.length < 3) {
+      setLocationChecks((prev) => [...prev, location]);
     }
+  }, [location]);
+
+  const getAverageLocation = async () => {
+    if (locationChecks.length === 0) return null;
+    const sum = locationChecks.reduce(
+      (acc, loc) => ({
+        latitude: acc.latitude + loc.latitude,
+        longitude: acc.longitude + loc.longitude,
+        accuracy: acc.accuracy + loc.accuracy,
+      }),
+      { latitude: 0, longitude: 0, accuracy: 0 }
+    );
+    const response = await fetch("https://api.ipify.org?format=json");
+    const data = await response.json();
+    setIp(data.ip);
+    setLatitude(sum.latitude / locationChecks.length);
+    setLongitude(sum.longitude / locationChecks.length);
+    setAccuracy(sum.accuracy / locationChecks.length);
+    return true;
+    // return {
+    //   latitude: sum.latitude / locationChecks.length,
+    //   longitude: sum.longitude / locationChecks.length,
+    //   accuracy: sum.accuracy / locationChecks.length,
+    // };
   };
+  console.log({ latitude, longitude, accuracy });
+
+  // const getLocationandIp = async () => {
+  //   try {
+  //     const position: GeolocationPosition = await new Promise(
+  //       (resolve, reject) => {
+  //         const options: CustomGeolocationOptions = {
+  //           enableHighAccuracy: true,
+  //           timeout: 5000,
+  //           maximumAge: 0,
+  //         };
+
+  //         navigator.geolocation.getCurrentPosition(resolve, reject, options);
+  //       }
+  //     );
+
+  //     setLatitude(position.coords.latitude);
+  //     setLongitude(position.coords.longitude);
+
+  //     const response = await fetch("https://api.ipify.org?format=json");
+  //     const data = await response.json();
+  //     setIp(data.ip);
+  //   } catch (error) {
+  //     toast.error("Failed to record location");
+  //     console.log("Error retrieving location or IP:", error);
+  //   }
+  // };
   const handleCheckBoxChange = async (
     e: React.ChangeEvent<HTMLInputElement>
   ) => {
@@ -53,8 +91,14 @@ const JoinSeminar = () => {
     SetIsLocationCheck(checked);
 
     if (checked) {
-      await getLocationandIp();
-      toast.success("Location Recorded Successfully");
+      const avgLocation = await getAverageLocation();
+      // await getLocationandIp();
+      if (!avgLocation) {
+        setLoading(false);
+        toast.error("Unable to verify location. Please try again.");
+      } else {
+        toast.success("Location Recorded Successfully");
+      }
     } else {
       setLatitude(0);
       setLongitude(0);
@@ -90,6 +134,7 @@ const JoinSeminar = () => {
       const payload = {
         latitude,
         longitude,
+        accuracy,
         code,
         ip,
       };

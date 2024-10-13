@@ -147,21 +147,24 @@ const Navbar = () => {
                   )}
                   {user && user.role === "TEACHER" && (
                     <div className="bg-[#5fda45] p-2 rounded-xl">
-                      <Link href="/" className="text-white font-bold">
+                      <Link
+                        href="/createseminar"
+                        className="text-white font-bold"
+                      >
                         Create Seminar
                       </Link>
                     </div>
                   )}
                   {user && user.role === "TEACHER" && (
                     <div className="bg-[#5fda45] p-2 rounded-xl">
-                      <Link href="/" className="text-white font-bold">
+                      <Link href="/Class" className="text-white font-bold">
                         View Created Seminars
                       </Link>
                     </div>
                   )}
                   {user && user.role === "STUDENT" && (
                     <div className="bg-[#5fda45] p-2 rounded-xl">
-                      <Link href="/" className="text-white font-bold">
+                      <Link href="/Class" className="text-white font-bold">
                         View Past Seminars Attended
                       </Link>
                     </div>

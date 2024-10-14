@@ -1,11 +1,10 @@
 import ClassModel from "@/models/classModel";
 import studentModel from "@/models/studentModel";
 import areLocationsNear from "@/utils/calculateDistance";
-import calculateDistanceInMeters from "@/utils/calculateDistance";
 import mongoose from "mongoose";
 import { NextResponse, NextRequest } from "next/server";
-import { broadcastToClass } from "../../sse/route";
 
+import { broadcastToClass } from "@/utils/sse";
 // Utility function for returning error responses
 const createErrorResponse = (message: string, status: number) => {
   return NextResponse.json({ success: false, message }, { status });

@@ -2,9 +2,9 @@ import ClassModel from "@/models/classModel";
 import teacherModel from "@/models/teacherModel";
 import { createClassSchema } from "@/schemas/createClassSchema";
 import { Connect } from "@/utils/db";
+import { broadcastToClass } from "@/utils/sse";
 import mongoose from "mongoose";
 import { NextRequest, NextResponse } from "next/server";
-import { broadcastToClass } from "../../sse/route";
 
 export async function POST(req: NextRequest) {
   try {

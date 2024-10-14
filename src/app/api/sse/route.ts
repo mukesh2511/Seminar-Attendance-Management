@@ -1,12 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-
-declare global {
-  var sseConnections: Map<string, Set<(data: any) => void>>;
-}
-
-if (!global.sseConnections) {
-  global.sseConnections = new Map();
-}
+import { addConnection, removeConnection } from "@/utils/sse";
 
 export async function GET(req: NextRequest) {
   const searchParams = req.nextUrl.searchParams;
@@ -24,20 +17,14 @@ export async function GET(req: NextRequest) {
         controller.enqueue(encoder.encode(`data: ${JSON.stringify(data)}\n\n`));
       };
 
-      if (!global.sseConnections.has(classId)) {
-        global.sseConnections.set(classId, new Set());
-      }
-      global.sseConnections.get(classId)!.add(sendEvent);
+      addConnection(classId, sendEvent);
 
       // Send an initial message
       sendEvent({ type: "connected", message: "SSE connection established" });
 
       // Clean up when the connection closes
       req.signal.addEventListener("abort", () => {
-        global.sseConnections.get(classId)?.delete(sendEvent);
-        if (global.sseConnections.get(classId)?.size === 0) {
-          global.sseConnections.delete(classId);
-        }
+        removeConnection(classId, sendEvent);
         controller.close();
       });
     },
@@ -50,13 +37,4 @@ export async function GET(req: NextRequest) {
       Connection: "keep-alive",
     },
   });
-}
-
-export function broadcastToClass(classId: string, data: any) {
-  const connections: any = global.sseConnections.get(classId);
-  if (connections) {
-    for (const sendEvent of connections) {
-      sendEvent(data);
-    }
-  }
 }

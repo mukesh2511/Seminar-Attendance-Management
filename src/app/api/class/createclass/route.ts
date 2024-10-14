@@ -4,6 +4,7 @@ import { createClassSchema } from "@/schemas/createClassSchema";
 import { Connect } from "@/utils/db";
 import mongoose from "mongoose";
 import { NextRequest, NextResponse } from "next/server";
+import { broadcastToClass } from "../../sse/route";
 
 export async function POST(req: NextRequest) {
   try {
@@ -53,13 +54,23 @@ export async function POST(req: NextRequest) {
     await Connect();
 
     // Create a new class document
-    const newClass = await ClassModel.create(reqData);
+    const newClass: any = await ClassModel.create(reqData);
     await teacherModel.findOneAndUpdate(
       { userId: newClass.TeacherId },
       {
         $push: { AllClasses: newClass._id }, // Use $push directly here
       }
     );
+
+    if (
+      global.sseConnections &&
+      global.sseConnections.has(newClass._id.toString())
+    ) {
+      broadcastToClass(newClass._id.toString(), {
+        type: "student-joined",
+        userId,
+      });
+    }
 
     return NextResponse.json(
       {

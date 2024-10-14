@@ -4,6 +4,7 @@ import areLocationsNear from "@/utils/calculateDistance";
 import calculateDistanceInMeters from "@/utils/calculateDistance";
 import mongoose from "mongoose";
 import { NextResponse, NextRequest } from "next/server";
+import { broadcastToClass } from "../../sse/route";
 
 // Utility function for returning error responses
 const createErrorResponse = (message: string, status: number) => {
@@ -34,7 +35,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Find class
-    const getClass = await ClassModel.findOne({ classCode: code });
+    const getClass: any = await ClassModel.findOne({ classCode: code });
     if (!getClass) {
       return createErrorResponse("Please enter correct Seminar Code", 404);
     }
@@ -98,6 +99,15 @@ export async function POST(req: NextRequest) {
         $push: { attendedClasses: getClass._id },
       }
     );
+    if (
+      global.sseConnections &&
+      global.sseConnections.has(getClass._id.toString())
+    ) {
+      broadcastToClass(getClass._id.toString(), {
+        type: "student-joined",
+        userId,
+      });
+    }
 
     // Success response
     return NextResponse.json(

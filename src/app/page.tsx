@@ -83,6 +83,12 @@ const Home = () => {
     secondRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
+  const handleClick = () => {
+    if (!user) {
+      toast.error("Login to continue!!");
+    }
+  };
+
   return (
     <>
       <Toaster />
@@ -184,7 +190,7 @@ const Home = () => {
               teachers and participation effortless for students.`}
             </p>
             <div className="bg-[#5fda45] p-2 rounded-xl flex hover:bg-blue-600 transition duration-300 w-max text-white font-bold">
-              <Link href="/">
+              <Link href="/createseminar" onClick={handleClick}>
                 Try Now <CallMadeIcon />
               </Link>
             </div>
@@ -210,7 +216,7 @@ const Home = () => {
               effort—quick, secure, and hassle-free!`}
             </p>
             <div className="bg-[#5fda45] p-2 rounded-xl flex hover:bg-blue-600 transition duration-300 w-max text-white font-bold">
-              <Link href="/">
+              <Link href="/joinseminar" onClick={handleClick}>
                 Try Now <CallMadeIcon />
               </Link>
             </div>

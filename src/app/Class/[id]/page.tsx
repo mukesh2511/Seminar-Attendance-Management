@@ -1,65 +1,60 @@
 "use client";
 import { AuthContext } from "@/context/userContext";
 import axios from "axios";
-import Link from "next/link";
 import { usePathname } from "next/navigation";
-import React, { useContext, useEffect, useState } from "react";
+import React, { useContext, useEffect } from "react";
 import toast, { Toaster } from "react-hot-toast";
-import io, { Socket } from "socket.io-client";
 import * as XLSX from "xlsx";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 
-let socket: Socket;
 const SingleClass = () => {
   const { user } = useContext(AuthContext);
-  const [data, setData] = useState<any>(null);
   const path = usePathname();
   const id = path.split("/")[2];
+  const queryClient = useQueryClient();
+
+  const fetchClassData = async () => {
+    const res = await axios.post("/api/class/getclass", { id });
+    if (res.status === 404) {
+      throw new Error("No Class Found!!");
+    }
+    return res.data.data[0];
+  };
+
+  const { data, error, isLoading, refetch } = useQuery({
+    queryKey: ["class", id],
+    queryFn: fetchClassData,
+    refetchOnWindowFocus: false,
+  });
 
   useEffect(() => {
-    socket = io();
-    socket.emit("join-class", id);
+    console.log({ id });
+    const eventSource = new EventSource(`/api/sse?classId=${id}`);
 
-    const fetchInfo = async () => {
-      try {
-        const res = await axios.post("/api/class/getclass", { id });
-        console.log({ afterRequest: res.data.data[0] });
-
-        if (res.status === 404) {
-          toast.error("No Class Found!!");
-        }
-        if (res.status === 200) {
-          const fetchedData = res.data.data[0];
-          // setData(fetchedData);
-
-          // Emit the fetched data via socket after setting it in the state
-          console.log("going to update and sockettttt");
-          socket.emit("updated-data", { id, fetchedData });
-        }
-      } catch (error: any) {
-        toast.error(error.message);
-        console.error("Error fetching class data:", error);
+    eventSource.onmessage = (event) => {
+      const data = JSON.parse(event.data);
+      if (data.type === "student-joined") {
+        // Refetch the class data when a new student joins
+        refetch();
+      } else if (data.type === "connected") {
+        console.log(data.message);
       }
     };
 
-    fetchInfo();
-
-    socket.on("error", (error) => {
-      toast.error("Error receiving class data!");
-      console.error("Socket error:", error);
-    });
-    socket.on("get-updated-data", (data) => {
-      console.log({ updatedData: data });
-      setData(data);
-    });
+    eventSource.onerror = (error) => {
+      console.error("SSE error:", error);
+      eventSource.close();
+    };
 
     return () => {
-      socket.disconnect();
+      eventSource.close();
     };
-  }, [id]);
+  }, [id, refetch]);
 
-  const exportToExcell = async () => {
-    if (!data.Students || data?.Students.length === 0) {
+  const exportToExcell = () => {
+    if (!data?.Students || data.Students.length === 0) {
       toast.error("No data to export");
+      return;
     }
     const worksheet = XLSX.utils.json_to_sheet(
       data.Students.map((student: any) => ({
@@ -80,7 +75,7 @@ const SingleClass = () => {
     XLSX.writeFile(workbook, "ClassesInformation.xlsx");
   };
 
-  if (data === null) {
+  if (isLoading) {
     return (
       <div className="flex justify-center items-center h-[calc(100%-5rem)] mt-10 my-auto mx-auto w-full">
         <div className="text-lg">
@@ -92,6 +87,11 @@ const SingleClass = () => {
         </div>
       </div>
     );
+  }
+
+  if (error) {
+    toast.error((error as Error).message);
+    return <div>Error loading class data</div>;
   }
 
   return (

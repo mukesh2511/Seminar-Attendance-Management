@@ -7,7 +7,7 @@ export async function POST(req: Request) {
   try {
     const body = await req.json();
     const { id } = body;
-    console.log("HHEHEHEHEHEHEHE");
+    console.log("HHEHEHEHEHEHEHE", id);
 
     // Ensure a valid ID is provided
     if (!id || !mongoose.Types.ObjectId.isValid(id)) {
